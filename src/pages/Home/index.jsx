@@ -4,6 +4,7 @@ import './index.css';
 import { Search } from 'lucide-react';
 import {useEffect, useState} from 'react';
 import Spinner from '../../components/Spinner/index';
+import notesAPI from '../../lib/api';
 
 function Home() {
   const [notes, setNotes] = useState([]);
@@ -15,13 +16,8 @@ function Home() {
   
   const fetchNotes = async() => {
     setLoading(true);
-    const result = await fetch('http://localhost:3001/notes', {
-      method: 'GET',
-    });
-    if(!result.ok)
-      throw new Error('メモ一覧の取得に失敗しました: ${result.status}');
 
-    const data = await result.json();
+    const data = await notesAPI.getAll();
     setNotes(data.notes);
     setLoading(false);
   }
