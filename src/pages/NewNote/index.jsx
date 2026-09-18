@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './index.css';
 import { ArrowLeft, Save } from 'lucide-react';
 import {useState} from 'react';
@@ -7,10 +7,14 @@ import notesAPI from '../../lib/api';
 function NewNote() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
 
   const createNote = async () => {
-    const data = await notesAPI.create({title, content});
-    console.log(data);
+    setSaving(true);
+    await notesAPI.create({title,content});
+    navigate('/');
+    setSaving(false);
   }
   
   return (
@@ -21,9 +25,13 @@ function NewNote() {
         </Link>
 
         <div className="new-note__actions">
-          <button className="new-note__save-btn" onClick={createNote}>
+          <button 
+            className="new-note__save-btn"
+            disabled={!title.trim() || !content.trim() || saving}
+            onClick={createNote}
+          >
             <Save className="new-note__save-icon" />
-            保存
+            {saving ? '保存中...' : '保存'}
           </button>
         </div>
       </div>
