@@ -3,18 +3,27 @@ import './index.css';
 import { ArrowLeft, Save } from 'lucide-react';
 import {useState} from 'react';
 import notesAPI from '../../lib/api';
+import {useNotification} from '../../contexts/NotificationContext';
 
 function NewNote() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const {showNotification} = useNotification();
 
   const createNote = async () => {
     setSaving(true);
-    await notesAPI.create({title,content});
-    navigate('/');
-    setSaving(false);
+    try {
+      await notesAPI.create({title, content});
+      showNotification('success', 'メモを作成しました!');
+      navigate('/');
+    }catch (error){
+      console.error('メモの作成に失敗しました:', error);
+      showNotification('error', 'メモの作成に失敗しました');
+    }finally {
+      setSaving(false);
+    }
   }
   
   return (

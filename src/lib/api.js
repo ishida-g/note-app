@@ -30,6 +30,33 @@ const notesAPI = {
             throw new Error(`メモの作成に失敗しました: ${result.status}`);
         return result.json();
     },
+
+    async getById(id) {
+        const result = await apiFetch(`/notes/${id}`, {method: 'GET'});
+        if(!result.ok)
+            throw new Error(`メモの取得に失敗しました: ${result.status}`);
+
+        return result.json();
+    },
+
+    async update(id, data) {
+        const result = await apiFetch(`/notes/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        if(!result.ok)
+            throw new Error(`メモの更新に失敗しました: ${result.status}`);
+
+        return result.json();
+    },
+
+    async delete(id) {
+        const result = await apiFetch(`/notes/${id}`, {method: 'DELETE'});
+        if(!result.ok)
+            throw new Error(`メモの削除に失敗しました`);
+
+        return result.json();
+    },
 };
 
 export default notesAPI;

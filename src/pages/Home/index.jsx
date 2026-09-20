@@ -5,10 +5,12 @@ import { Search } from 'lucide-react';
 import {useEffect, useState} from 'react';
 import Spinner from '../../components/Spinner/index';
 import notesAPI from '../../lib/api';
+import {useNotification} from '../../contexts/NotificationContext';
 
 function Home() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showNotification} = useNotification();
   
   useEffect(() => {
     fetchNotes();
@@ -16,11 +18,29 @@ function Home() {
   
   const fetchNotes = async() => {
     setLoading(true);
-
-    const data = await notesAPI.getAll();
-    setNotes(data.notes);
-    setLoading(false);
+    try{
+      const data = await notesAPI.getAll();
+      setNotes(data.notes);
+    }catch (error){
+      console.error('メモの取得に失敗しました:', error);
+      showNotification('error', 'メモの取得に失敗しました');
+    }finally{
+      setLoading(false);
+    }
   }
+
+  const deleteNote = async (id) => {
+    if(window.confirm('このメモを削除してもよろしいですか?')) {
+      try {
+        await notesAPI.delete(id);
+        await fetchNotes();
+        showNotification('success', 'メモを削除しました');
+      } catch (error) {
+        console.error('メモの削除に失敗しました:', error);
+        showNotification('error', 'メモの削除に失敗しました');
+      }
+    }
+  };
 
   const getContents = () => {
     if(loading) {
@@ -34,7 +54,7 @@ function Home() {
     return (
       <div className="home__notes">
         {notes.map((note) => (
-          <NoteCard key={note.id} note={note} />
+          <NoteCard key={note.id} note={note} onDelete={deleteNote}/>
         ))}
       </div>
     );
