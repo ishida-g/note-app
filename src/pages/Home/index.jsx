@@ -6,21 +6,26 @@ import {useEffect, useState} from 'react';
 import Spinner from '../../components/Spinner/index';
 import notesAPI from '../../lib/api';
 import {useNotification} from '../../contexts/NotificationContext';
+import {useSearchParams} from 'react-router-dom';
 
 function Home() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showNotification} = useNotification();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const [totalPages, setTotalPages] = useState(1);
   
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, [currentPage]);
   
   const fetchNotes = async() => {
     setLoading(true);
     try{
-      const data = await notesAPI.getAll();
+      const data = await notesAPI.getAll({page: currentPage});
       setNotes(data.notes);
+      setTotalPages(data.pagination.totalPages);
     }catch (error){
       console.error('メモの取得に失敗しました:', error);
       showNotification('error', 'メモの取得に失敗しました');
@@ -42,6 +47,10 @@ function Home() {
     }
   };
 
+  const moveToPage = (page) =>{
+    setSearchParams({page: page.toString()});
+  }
+  
   const getContents = () => {
     if(loading) {
       return (
@@ -76,7 +85,11 @@ function Home() {
         </div>
       </div>
       {getContents()}
-      <Pagination />
+      <Pagination 
+        currentPage={currentPage}
+        onPageChange={moveToPage}
+        totalPages={totalPages}
+        />
     </div>
   );
 }
