@@ -15,15 +15,20 @@ function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const [totalPages, setTotalPages] = useState(1);
+  const keyword = searchParams.get('search') || '';
+  const [inputValue, setInputValue] = useState(keyword);
   
   useEffect(() => {
     fetchNotes();
-  }, [currentPage]);
+  }, [currentPage, keyword]);
   
   const fetchNotes = async() => {
     setLoading(true);
     try{
-      const data = await notesAPI.getAll({page: currentPage});
+      const data = await notesAPI.getAll({
+        page: currentPage,
+        search: keyword,
+      });
       setNotes(data.notes);
       setTotalPages(data.pagination.totalPages);
     }catch (error){
@@ -51,11 +56,23 @@ function Home() {
     setSearchParams({page: page.toString()});
   }
   
+  const handleSearch = () => {
+    setSearchParams({search: inputValue.trim(), page:1});
+  }
+  
   const getContents = () => {
     if(loading) {
       return (
         <div className="home__notes home__notes--loading">
           <Spinner />
+        </div>
+      );
+    }
+
+    if(notes.length === 0){
+      return (
+        <div className="home__notes home__notes--loading">
+          <p>メモがありません。新しいメモを作成してみましょう</p>
         </div>
       );
     }
@@ -78,8 +95,10 @@ function Home() {
             type="text"
             placeholder="メモを検索..."
             className="home__search-field"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
           />
-          <button className="home__search-btn">
+          <button className="home__search-btn" onClick={handleSearch}>
             検索
           </button>
         </div>
